@@ -32,17 +32,16 @@ from awacs.sts import AssumeRole
 
 ApplicationName = "jenkins"
 ApplicationPort = "8080"
-
-GithubAccount = "EffectiveDevOpsWithAWS"
+GithubAccount = "yogeshraheja"
 GithubAnsibleURL = "https://github.com/{}/ansible".format(GithubAccount)
 
-AnsiblePullCmd = \
-    "/usr/local/bin/ansible-pull -U {} {}.yml -i localhost".format(
-        GithubAnsibleURL,
-        ApplicationName
-    )
-
 PublicCidrIp = str(ip_network(get_ip()))
+
+AnsiblePullCmd = \
+"/usr/bin/ansible-pull -U {} {}.yml -i localhost".format( GithubAnsibleURL,
+ApplicationName
+)
+
 
 t = Template()
 
@@ -74,12 +73,11 @@ t.add_resource(ec2.SecurityGroup(
     ],
 ))
 
-ud = Base64(Join('\n', [
-    "#!/bin/bash",
-    "yum install --enablerepo=epel -y git",
-    "pip install ansible",
-    AnsiblePullCmd,
-    "echo '*/10 * * * * {}' > /etc/cron.d/ansible-pull".format(AnsiblePullCmd)
+ud = Base64(Join('\n', [ "#!/bin/bash",
+"yum install --enablerepo=epel -y git", 
+"yum install --enablerepo=epel -y ansible",
+AnsiblePullCmd,
+"echo '*/10 * * * * {}' > /etc/cron.d/ansible-pull".format(AnsiblePullCmd)
 ]))
 
 t.add_resource(Role(
@@ -95,21 +93,6 @@ t.add_resource(Role(
     )
 ))
 
-t.add_resource(IAMPolicy(
-    "Policy",
-    PolicyName="AllowCodePipeline",
-    PolicyDocument=Policy(
-        Statement=[
-            Statement(
-                Effect=Allow,
-                Action=[Action("codepipeline", "*")],
-                Resource=["*"]
-            )
-        ]
-    ),
-    Roles=[Ref("Role")]
-))
-
 t.add_resource(InstanceProfile(
     "InstanceProfile",
     Path="/",
@@ -118,7 +101,7 @@ t.add_resource(InstanceProfile(
 
 t.add_resource(ec2.Instance(
     "instance",
-    ImageId="ami-a4c7edb2",
+    ImageId="ami-cfe4b2b0",
     InstanceType="t2.micro",
     SecurityGroups=[Ref("SecurityGroup")],
     KeyName=Ref("KeyPair"),
@@ -142,3 +125,4 @@ t.add_output(Output(
 ))
 
 print t.to_json()
+
