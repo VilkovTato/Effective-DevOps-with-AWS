@@ -55,7 +55,7 @@ t.add_parameter(Parameter(
 t.add_resource(Domain(
     'ElasticsearchCluster',
     DomainName="logs",
-    ElasticsearchVersion="5.3",
+    ElasticsearchVersion="6.3",
     ElasticsearchClusterConfig=ElasticsearchClusterConfig(
         DedicatedMasterEnabled=False,
         InstanceCount=Ref("InstanceCount"),
